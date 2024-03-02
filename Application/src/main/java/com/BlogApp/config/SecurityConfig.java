@@ -6,10 +6,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+
 
 @Configuration
 @EnableWebSecurity
@@ -25,6 +27,12 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService getDetailsService() {
+        UserDetails user =
+                User.withDefaultPasswordEncoder()
+                        .username("user")
+                        .password("password")
+                        .roles("USER")
+                        .build();
         return new CustomUserDetailsService();
     }
 
@@ -47,13 +55,13 @@ public class SecurityConfig {
          * //.usernameParameter("email")
          * .defaultSuccessUrl("/user/profile").permitAll();
          */
-        http.csrf().disable()
+        http
                 .authorizeRequests().requestMatchers("/user/**").hasRole("USER")
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/**").permitAll().and()
-                .formLogin().loginPage("/signin").loginProcessingUrl("/userLogin")
+                .formLogin((form) -> form.loginPage("/signin").loginProcessingUrl("/userLogin")
                 .successHandler(sucessHandler)
-                .permitAll();
+                .permitAll());
 
 
         return http.build();
